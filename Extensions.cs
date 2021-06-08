@@ -1,4 +1,4 @@
-namespace DissassemblyExtensions
+namespace Extensions
 {
     public static class OpCodeExtensions
     {
