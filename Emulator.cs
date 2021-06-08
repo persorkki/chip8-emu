@@ -5,7 +5,7 @@ using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
 
-using DissassemblyExtensions;
+using Extensions;
 using EmulatorExtensions;
 
 namespace emud
