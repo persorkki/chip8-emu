@@ -14,6 +14,7 @@ namespace emud
     {
         //registers 0-f
         //f is used for flags
+        
         byte[] registers = new byte[16];
 
         //used only for storing addresses (12bits)
@@ -30,7 +31,7 @@ namespace emud
         byte sp;
 
         //4KB RAM memory, first 512 bytes are not used for programs
-        byte[] memory = new byte[4096];
+        readonly byte[] memory = new byte[4096];
 
         //64,32-pixel monochrome display
         byte[,] display = new byte[64,32];
@@ -125,6 +126,7 @@ namespace emud
                         //00EE - RET
                         //The interpreter sets the program counter to the address at the top of the stack,
                         //then subtracts 1 from the stack pointer.
+                        ///<summary>
                         case 0xee:
                             pc = stack.Pop();
                             sp--;
@@ -132,7 +134,7 @@ namespace emud
                             break;
                         //empty
                         default:
-                            
+                            System.Console.WriteLine("?");
                             break;
                     }
                     break;
@@ -207,6 +209,7 @@ namespace emud
                     break;
                 //Dxyn - DRW Vx, Vy, nibble
                 //Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+                
                 case 0xd:
                     int posX;
                     int posY;
