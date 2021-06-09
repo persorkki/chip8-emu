@@ -109,6 +109,9 @@ namespace emud
             byte firstN = (byte) ((opcode & 0xf000) >> 12);
             byte firstbyte = memory[pc];
             byte kk = memory[pc+1];
+
+            int value;
+
             opcode.PrintRaw();
             switch(firstN)
             {
@@ -201,15 +204,92 @@ namespace emud
                     System.Console.Write($"ADD V{x:x}, {kk}");
                     break;
 
+                case 0x8:
+                    switch(lastN)
+                    {
+                        //Set Vx = Vy
+                        //Stores the value of register Vy in register Vx.
+                        case 0x0:
+                            registers[x] = registers[y];
+                            System.Console.Write($"LD V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx OR Vy.
+                        case 0x1:
+                            registers[x] = (byte) (registers[x] | registers[y]);
+                            System.Console.Write($"OR V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx AND Vy
+                        case 0x2:
+                            registers[x] = (byte) (registers[x] & registers[y]);
+                            System.Console.Write($"AND V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx XOR Vy.
+                        case 0x3:
+                            registers[x] = (byte) (registers[x] ^ registers[y]);
+                            System.Console.Write($"XOR V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx + Vy, set VF = carry.
+                        case 0x4:
+                            value = registers[x] & registers[y];
+                            registers[0xf] = value > 255 ? (byte)1 : (byte)0;
+                            System.Console.Write($"ADD V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx - Vy, set VF = NOT borrow.
+                        case 0x5:
+                            value = registers[x] - registers[y];
+                            registers[0xf] = registers[x] > registers[y] ? (byte)1 : (byte)0;
+                            registers[x] = (byte) value;
+                            System.Console.Write($"SUB V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx SHR 1.
+                        case 0x6:
+                            const byte leastsignificant = 0b0001;
+                            registers[15] = 0;
+                            if ((byte) (registers[x] & leastsignificant) == 1)
+                            {
+                                registers[15] = 1;
+                            }
+                            registers[x] /= 2;
+                            break;
+                        //Set Vx = Vy - Vx, set VF = NOT borrow.
+                        case 0x7:
+                            value = registers[y] - registers[x];
+                            registers[0xf] = registers[y] > registers[x] ? (byte)1 : (byte)0;
+                            registers[x] = (byte) value;
+                            System.Console.Write($"SUB V{x:x}, V{y:x}");
+                            break;
+                        //Set Vx = Vx SHR 1.
+                        case 0xe:
+                            const byte mostsignificant = 0b1000;
+                            registers[15] = 0;
+                            if ((byte) (registers[x] & mostsignificant) == 1)
+                            {
+                                registers[15] = 1;
+                            }
+                            registers[x] *= 2;
+                            break;
+                    }
+                    break;
+                case 0x9:
+                    if (registers[x] != registers[y])
+                    {
+                        pc += 2;
+                    }
+                    System.Console.Write($"SNE V{x:x}, V{y:x}");
+                    break;
                 //Annn - LD I, addr
                 //The value of register I is set to nnn.
                 case 0xa:
                     registerI = addr;
                     System.Console.Write($"LD I, {addr:x}");
                     break;
+                //Jump to location nnn + V0.
+                case 0xb:
+                    pc = (ushort) (addr + registers[0]);
+                    System.Console.Write($"JP V0, {addr:x}");
+                    break;
                 //Dxyn - DRW Vx, Vy, nibble
                 //Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-                
                 case 0xd:
                     int posX;
                     int posY;
